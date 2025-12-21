@@ -1,67 +1,92 @@
 // src/screens/LoginScreen.js
-import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, InputAdornment } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import LockIcon from '@mui/icons-material/Lock';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import React from 'react';
+import { Box, Button, Typography, Paper, Alert } from '@mui/material';
+import GoogleIcon from '@mui/icons-material/Google';
+import { auth, provider } from '../config/firebase'; 
+import { signInWithPopup, signOut } from "firebase/auth";
+
+// --- YETKİLİ KULLANICI LİSTESİ (WHITELIST) ---
+// Sadece bu listedeki e-posta adresleri sisteme erişebilir.
+const ALLOWED_USERS = [
+  "ali_isakoca@hotmail.com",  // Sen
+  "akyuzmustafaa@hotmail.com",       // Ekip Arkadaşı 1
+  "aliozen210@gmail.com",            // Ekip Arkadaşı 2
+  "menes.gurkan@gmail.com",       // Ekip Arkadaşı 3
+  "bedirhanyigit71@gmail.com"       // Ekip Arkadaşı 4
+];
 
 export default function LoginScreen({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLogin(username, password);
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      console.log("Giriş Denemesi:", user.email);
+
+      // --- GÜVENLİK KONTROLÜ ---
+      if (ALLOWED_USERS.includes(user.email)) {
+        // Kullanıcı listede mevcut, erişim izni veriliyor.
+        console.log("Erişim İzni Verildi ✅");
+        
+        // Tüm yetkili kullanıcılar varsayılan olarak 'admin' yetkisine sahiptir.
+        onLogin(user.email, 'admin'); 
+
+      } else {
+        // Kullanıcı listede yok, erişim reddediliyor.
+        console.warn("Yetkisiz Giriş Denemesi 🚫");
+        alert("ERİŞİM ENGELLENDİ!\nBu mail adresi proje ekibinde tanımlı değil.");
+        
+        // Hemen oturumu kapat (Kick out)
+        await signOut(auth);
+      }
+
+    } catch (error) {
+      console.error("Giriş Hatası:", error);
+      alert("Giriş yapılamadı: " + error.message);
+    }
   };
 
   return (
     <Box 
       sx={{ 
         height: '100vh', width: '100vw',
-        backgroundImage: 'url(/arka_plan.jpg)', 
-        backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'fixed', top: 0, left: 0
+        backgroundImage: 'url(https://source.unsplash.com/random/1920x1080/?city,traffic)', // Rastgele havalı trafik resmi
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
       }}
     >
-      <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)' }} />
       <Paper 
         elevation={24}
         sx={{ 
           p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', 
-          width: '90%', maxWidth: '450px',
-          backgroundColor: 'rgba(30, 30, 30, 0.70)', backdropFilter: 'blur(12px)',
-          borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)', 
-          zIndex: 2, boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
+          backgroundColor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(10px)',
+          borderRadius: '20px', maxWidth: '400px'
         }}
       >
-        <Typography component="h1" variant="h4" sx={{ color: '#fff', fontWeight: '900', textAlign: 'center', mb: 4, textShadow: '0px 0px 15px rgba(255,255,255,0.3)' }}>
-          PERFECT TRAFFIC<br/><span style={{ fontSize: '0.7em', fontWeight: '300', color: '#64ffda' }}>SIMULATION</span>
+        <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, color: '#1a237e' }}>
+          TrafficOS
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 4, color: '#555' }}>
+          Akıllı Kavşak Yönetim Paneli
         </Typography>
         
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-          <TextField
-            margin="normal" required fullWidth placeholder="Kullanıcı Adı" variant="outlined"
-            value={username} onChange={(e) => setUsername(e.target.value)}
-            InputProps={{ startAdornment: (<InputAdornment position="start"><PersonIcon sx={{ color: '#64ffda' }} /></InputAdornment>), style: { color: 'white' } }}
-            sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&.Mui-focused fieldset': { borderColor: '#64ffda' }, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px' } }}
-          />
-          <TextField
-            margin="normal" required fullWidth type="password" placeholder="Şifre" variant="outlined"
-            value={password} onChange={(e) => setPassword(e.target.value)}
-            InputProps={{ startAdornment: (<InputAdornment position="start"><LockIcon sx={{ color: '#64ffda' }} /></InputAdornment>), style: { color: 'white' } }}
-            sx={{ mb: 4, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&.Mui-focused fieldset': { borderColor: '#64ffda' }, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '10px' } }}
-          />
-          <Button 
-            type="submit" fullWidth variant="contained" size="large" endIcon={<ArrowForwardIcon />}
-            sx={{ mt: 1, mb: 2, py: 1.8, fontSize: '1rem', fontWeight: 'bold', borderRadius: '12px', backgroundColor: '#00e676', color: '#000', '&:hover': { backgroundColor: '#00c853' } }}
-          >
-            SİMÜLASYONU BAŞLAT
-          </Button>
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', mt: 2, display: 'block', textAlign: 'center' }}>
-            Demo: admin/admin veya viewer/viewer
-          </Typography>
-        </Box>
+        <Button 
+          variant="contained" 
+          size="large"
+          startIcon={<GoogleIcon />}
+          onClick={handleGoogleLogin}
+          sx={{ 
+            bgcolor: '#db4437', color: 'white', py: 1.5, px: 4, fontWeight: 'bold',
+            '&:hover': { bgcolor: '#c53929' }
+          }}
+        >
+          Google ile Giriş Yap
+        </Button>
+
+        <Typography variant="caption" sx={{ mt: 3, color: '#777' }}>
+          Sadece yetkili personel giriş yapabilir.
+        </Typography>
       </Paper>
     </Box>
   );
