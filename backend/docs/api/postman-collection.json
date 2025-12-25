@@ -1,0 +1,496 @@
+{
+  "info": {
+    "name": "Perfect Traffic Lights API",
+    "description": "Complete API collection for Perfect Traffic Lights System - Traffic signal management, sensor data, emergency preemption, and performance monitoring",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "intersection_id",
+      "value": "INT-001",
+      "type": "string"
+    },
+    {
+      "key": "phase_id",
+      "value": "phase-1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "    pm.test('Token received', function() {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@traffic.com\",\n  \"password\": \"secure-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate user and receive JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh JWT token before expiration"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout and invalidate token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Intersections",
+      "item": [
+        {
+          "name": "List All Intersections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["intersections"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Retrieve list of all traffic intersections with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Intersection Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}"]
+            },
+            "description": "Get real-time status of a specific intersection including current phase, signal timings, and queue estimates"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Operational Mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"adaptive\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/mode",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "mode"]
+            },
+            "description": "Change intersection operational mode (fixed-time, actuated, adaptive, or maintenance)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Configuration",
+      "item": [
+        {
+          "name": "Get Intersection Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/config",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "config"]
+            },
+            "description": "Retrieve complete configuration including phases, cycle length, and priority rules"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Intersection Config",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cycleLength\": 90,\n  \"minGreenTime\": 10,\n  \"maxGreenTime\": 60,\n  \"yellowTime\": 4,\n  \"allRedTime\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/config",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "config"]
+            },
+            "description": "Update intersection configuration parameters (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Phase Configuration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"minGreenTime\": 15,\n  \"maxGreenTime\": 45,\n  \"yellowTime\": 4,\n  \"redClearanceTime\": 2,\n  \"pedestrianTime\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/phases/{{phase_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "phases", "{{phase_id}}"]
+            },
+            "description": "Update specific phase timing configuration"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sensor Data",
+      "item": [
+        {
+          "name": "Submit Sensor Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"detectorId\": \"DET-001\",\n  \"intersectionId\": \"{{intersection_id}}\",\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"vehicleCount\": 5,\n  \"occupancy\": 0.45,\n  \"speed\": 35,\n  \"laneId\": \"lane-1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/sensors/data",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "sensors", "data"]
+            },
+            "description": "Submit real-time sensor data from vehicle detectors"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Detector Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/sensors",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "sensors"]
+            },
+            "description": "Get status of all detectors at an intersection"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Emergency Preemption",
+      "item": [
+        {
+          "name": "Request Emergency Preemption",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": \"EMG-001\",\n  \"vehicleType\": \"ambulance\",\n  \"approach\": \"north\",\n  \"estimatedArrival\": 30,\n  \"priority\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/emergency",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "emergency"]
+            },
+            "description": "Request emergency vehicle preemption for priority clearance"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Preemptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/emergency",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "emergency"]
+            },
+            "description": "Get list of active emergency preemptions"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Emergency Preemption",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/emergency/EMG-001",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "emergency", "EMG-001"]
+            },
+            "description": "Cancel active emergency preemption"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pedestrian",
+      "item": [
+        {
+          "name": "Request Pedestrian Crossing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crossingId\": \"CROSS-001\",\n  \"requestTime\": \"{{$isoTimestamp}}\",\n  \"approach\": \"east\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/pedestrian-request",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "pedestrian-request"]
+            },
+            "description": "Register pedestrian crossing button press"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pedestrian Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/pedestrian-status",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "pedestrian-status"]
+            },
+            "description": "Get pedestrian crossing status and wait times"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Metrics & Performance",
+      "item": [
+        {
+          "name": "Get Intersection Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/intersections/{{intersection_id}}/metrics?period=24h",
+              "host": ["{{base_url}}"],
+              "path": ["intersections", "{{intersection_id}}", "metrics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "24h",
+                  "description": "Time period: 1h, 24h, 7d, 30d"
+                }
+              ]
+            },
+            "description": "Get performance metrics including average delay, throughput, queue length, and cycle failures"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System-wide Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/metrics/system?period=24h",
+              "host": ["{{base_url}}"],
+              "path": ["metrics", "system"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "24h"
+                }
+              ]
+            },
+            "description": "Get aggregated system-wide performance metrics"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "System Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/system/health",
+              "host": ["{{base_url}}"],
+              "path": ["system", "health"]
+            },
+            "description": "Check overall system health status"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/system/status",
+              "host": ["{{base_url}}"],
+              "path": ["system", "status"]
+            },
+            "description": "Get detailed system status including uptime, active intersections, and resource usage"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "pm.request.headers.add({",
+          "    key: 'Accept',",
+          "    value: 'application/json'",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "pm.test('Status code is 2xx', function() {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+          "});",
+          "",
+          "pm.test('Response time is acceptable', function() {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
+        ]
+      }
+    }
+  ]
+}
