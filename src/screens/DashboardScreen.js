@@ -28,6 +28,7 @@ export default function DashboardScreen({ userRole, onLogout }) {
   const [tabValue, setTabValue] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false); // Onay penceresi kontrolü
   const [drawerOpen, setDrawerOpen] = useState(true); // Sidebar açık/kapalı durumu
+  const [activePhase, setActivePhase] = useState(0); // Aktif faz
 
   // --- VERİ YÖNETİMİ (HOOK) ---
   const {
@@ -240,6 +241,9 @@ export default function DashboardScreen({ userRole, onLogout }) {
                     failsafeMode={failsafeMode}
                     intersectionType={intersectionType}
                     controlMode={controlMode}
+                    simulationSpeed={simulationSpeed}
+                    activePhase={activePhase}
+  phases={phases}
                 />
               </Box>
 
@@ -283,7 +287,11 @@ export default function DashboardScreen({ userRole, onLogout }) {
           </TabPanel>
 
           <TabPanel value={tabValue} index={4}>
-              <AnalyticsTab />
+              <AnalyticsTab
+                activePhase={activePhase}
+                phases={phases}
+              />
+              
           </TabPanel>
 
           <TabPanel value={tabValue} index={5}>

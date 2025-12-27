@@ -7,6 +7,11 @@ export const useTrafficData = (selectedIntersection, userRole) => {
   // --- STATE YÖNETİMİ ---
   const [notification, setNotification] = useState({ open: false, message: '' });
   const [logs, setLogs] = useState([]);
+  const [analytics, setAnalytics] = useState({
+  density: [],
+  speed: [],
+  avgDelay: 0
+});
   
   // Konfigürasyon Ayarları
   const [emergencyMode, setEmergencyMode] = useState(true);
@@ -37,6 +42,9 @@ export const useTrafficData = (selectedIntersection, userRole) => {
   ]);
   
   const [lanes, setLanes] = useState(initialLanes);
+  const [activePhase, setActivePhase] = useState(phases[0]?.id);
+  
+
 
   const isReadOnly = userRole === 'viewer';
 
@@ -46,6 +54,10 @@ export const useTrafficData = (selectedIntersection, userRole) => {
 
     // 1. Konfigürasyon Dinleyicisi
     const configRef = doc(db, "config", selectedIntersection);
+    const analyticsRef = doc(db, "analytics", selectedIntersection);
+    const unsubAnalytics = onSnapshot(analyticsRef, snap => {
+    if (snap.exists()) setAnalytics(snap.data());
+    });
     const unsubConfig = onSnapshot(configRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -158,6 +170,8 @@ export const useTrafficData = (selectedIntersection, userRole) => {
     cabinetDoorOpen, setCabinetDoorOpen,
     phases, setPhases,
     lanes, setLanes,
+    analytics,
+    activePhase, setActivePhase,
     
     // Actions
     saveToFirebase,

@@ -1,7 +1,9 @@
 import React from 'react';
-import { Grid, Card, CardContent, Typography, Box, Divider } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Divider, Alert } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { TrendingUp, Speed, Warning, DirectionsCar } from '@mui/icons-material';
+import { useMemo } from 'react';
+
 
 // Örnek Veriler
 const hourlyTrafficData = [
@@ -48,7 +50,40 @@ const StatCard = ({ title, value, icon, color }) => (
   </Card>
 );
 
-export default function AnalyticsTab() {
+export default function AnalyticsTab({analytics,activePhase,phases}) {
+  const phaseAnalytics = useMemo(() => {
+  if (!activePhase || !phases) return null;
+  if (!phaseAnalytics)
+  return <Alert severity="info">Calculating phase-based KPIs...</Alert>;
+
+  const phase = phases.find(p => p.id === activePhase);
+  if (!phase) return null;
+
+  const duration = phase.duration; // saniye
+  const greenDirections = phase.greenDirections?.length || 1;
+
+  // Basit ama MANTIKLI KPI modeli
+  const avgDelay =
+    Math.max(5, 60 - duration * greenDirections);
+
+  const queueLength =
+    Math.round(100 / greenDirections + Math.random() * 10);
+
+  const throughput =
+    Math.round(duration * greenDirections * 1.5);
+
+  return {
+    avgDelay,
+    queueLength,
+    throughput,
+    phaseName: phase.name
+  };
+}, [activePhase, phases]);
+  if (!phaseAnalytics)
+  return <Alert severity="info">Calculating phase-based KPIs...</Alert>;
+
+  if (!analytics) return <Typography>Loading analytics...</Typography>;
+  if (!analytics) return <Alert severity="info">Loading live traffic analytics...</Alert>;
   return (
     <Grid container spacing={3}>
       {/* ÖZET KARTLAR */}

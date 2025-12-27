@@ -1,5 +1,8 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
+
 
 // Basit Trafik Işığı Bileşeni
 const TrafficLight = ({ color, label, position }) => (
@@ -20,20 +23,48 @@ const TrafficLight = ({ color, label, position }) => (
   </Box>
 );
 
-export default function IntersectionVisualizer({ emergencyMode, failsafeMode, intersectionType, controlMode }) {
+export default function IntersectionVisualizer({ activePhase, phases, emergencyMode, failsafeMode, intersectionType, controlMode }) {
+  const [currentPhase, setCurrentPhase] = useState(phases?.[0]);
+  const [phaseProgress, setPhaseProgress] = useState(0);
+
   
   // Simülasyon için state (Fixed Time ve Adaptive AI için döngü)
   const [cycleState, setCycleState] = useState(0); // 0: NS Green, 1: NS Yellow, 2: EW Green, 3: EW Yellow
 
   useEffect(() => {
-    if (emergencyMode || failsafeMode !== 'fixed-time') return; // Sadece normal modda döngü çalışsın
+    if (!phases || phases.length === 0) return;
+    if (emergencyMode) return;
+    if (controlMode === 'adaptive-ai') return;
+
+    let index = 0;
+    setCurrentPhase(phases[index]);
+    setPhaseProgress(0);
+
+    const tick = setInterval(() => {
+      setPhaseProgress(prev => {
+        if (prev >= 100) {
+          index = (index + 1) % phases.length;
+          setCurrentPhase(phases[index]);
+          return 0;
+        }
+        return prev + (100 / phases[index].duration);
+      });
+    }, 1000);
+
+    return () => clearInterval(tick);
+  }, [phases, emergencyMode, controlMode]);
+
+  useEffect(() => {
+    if (controlMode !== 'adaptive-ai') return;
 
     const interval = setInterval(() => {
-      setCycleState(prev => (prev + 1) % 4);
-    }, 2000); // 2 saniyede bir değiş
+      // NS %60 ihtimalle yeşil alsın
+      const random = Math.random();
+      setCycleState(random > 0.4 ? 0 : 2);
+    }, 2500);
 
     return () => clearInterval(interval);
-  }, [emergencyMode, failsafeMode, controlMode]);
+  }, [controlMode]);
 
   // Işık Rengini Belirle
   const getLightColor = (direction) => {
@@ -46,15 +77,15 @@ export default function IntersectionVisualizer({ emergencyMode, failsafeMode, in
 
     // 3. NORMAL OPERASYON (Fixed Time / Adaptive AI)
     // Basit bir döngü simülasyonu
-    if (direction === 'NS') { // Kuzey-Güney
-      if (cycleState === 0) return 'green';
-      if (cycleState === 1) return 'yellow';
-      return 'red';
-    } else { // Doğu-Batı
-      if (cycleState === 2) return 'green';
-      if (cycleState === 3) return 'yellow';
-      return 'red';
-    }
+    if (!activePhase) return 'red';
+
+if (direction === 'NS') {
+  return activePhase.shortName.includes('NS') ? 'green' : 'red';
+}
+
+if (direction === 'EW') {
+  return activePhase.shortName.includes('EW') ? 'green' : 'red';
+}
   };
 
   const nsColor = getLightColor('NS');
@@ -153,7 +184,50 @@ export default function IntersectionVisualizer({ emergencyMode, failsafeMode, in
     <Box sx={{ 
       width: '100%', height: '300px', bgcolor: '#e0e0e0', borderRadius: 4, 
       position: 'relative', overflow: 'hidden', border: '4px solid #bdbdbd'
-    }}>
+    }}><Box sx={{
+  position: 'absolute',
+  bottom: 10,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  bgcolor: activePhase.color,
+  color: 'white',
+  px: 2,
+  py: 0.5,
+  borderRadius: 2,
+  fontWeight: 'bold',
+  boxShadow: '0 0 15px rgba(0,0,0,0.4)'
+}}>
+  <Box sx={{
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  height: '6px',
+  width: `${phaseProgress}%`,
+  bgcolor: activePhase.color,
+  transition: 'width 0.8s linear'
+}} />
+  ACTIVE PHASE: {activePhase.name}
+</Box>
+      {/* 🚨 EMERGENCY MODE GÖRSEL UYARI */}
+    {emergencyMode && (
+      <Box sx={{
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        bgcolor: 'error.main',
+        color: 'white',
+        px: 2,
+        py: 0.5,
+        borderRadius: 2,
+        fontWeight: 'bold',
+        zIndex: 20,
+        boxShadow: '0 0 10px rgba(255,0,0,0.8)',
+        animation: 'pulse 1.2s infinite'
+      }}>
+        🚨 EMERGENCY MODE
+      </Box>
+      
+    )}
       {renderRoads()}
       
       {/* ŞERİT ÇİZGİLERİ (Basitleştirilmiş) */}
