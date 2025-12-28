@@ -1126,24 +1126,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 # "Bearer " öneki önemli!
 ```
 
-### CORS Hataları
-```java
-// SecurityConfig.java'da CORS yapılandırması mevcut
-// Frontend farklı port'ta çalışıyorsa (örn: 3000)
-// localhost:3000 otomatik olarak izin verilir
-```
-
----
-
-## 📞 Destek
-
-Sorular için:
-- GitHub Issues: <repo-url>/issues
-- Team Lead: [İsim]
-- Documentation: http://localhost:8080/swagger-ui.html
-
----
-
 ## 📝 Notlar
 
 ### Önemli Hatırlatmalar
