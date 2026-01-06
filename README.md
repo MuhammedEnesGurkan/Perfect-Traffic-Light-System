@@ -1,372 +1,338 @@
-# 🚦 Perfect Traffic Light System - Mustafa - Sprint 4 - 5
+# 🚦 Perfect Traffic Light System
 
-## 📋 İçindekiler
-- [Genel Bakış](#genel-bakış)
-- [Yeni Özellikler](#yeni-özellikler)
-- [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
-- [API Dokümantasyonu](#api-dokümantasyonu)
-- [Frontend Entegrasyon Rehberi](#frontend-entegrasyon-rehberi)
-- [Test Senaryoları](#test-senaryoları)
-- [Veritabanı Şeması](#veritabanı-şeması)
+A comprehensive traffic management platform with JWT Authentication, Emergency Vehicle Priority System, Rule-Based Optimization, Sensor Integration, and Statistical Reporting.
 
----
-
-## 🎯 Genel Bakış
-
-Perfect Traffic Light System artık **JWT Authentication**, **Acil Araç Öncelik Sistemi**, **Kural Tabanlı Optimizasyon**, **Sensör Entegrasyonu** ve **İstatistik Raporlama** özellikleriyle donatılmış kapsamlı bir trafik yönetim platformu.
-
-### Teknoloji Stack
-- **Backend:** Spring Boot 3.2.0
-- **Database:** PostgreSQL 15
-- **Authentication:** JWT (JSON Web Token)
-- **Migration:** Flyway
-- **API Documentation:** Swagger/OpenAPI 3.0
-- **Deployment:** Docker + Docker Compose
+## 👥 Team Members
+- **Mustafa Akyüz**
+- **Ali Özen**
+- **Muhammed Enes Gürkan**
+- **Ali İsakoca**
+- **Bedirhan Yiğit**
 
 ---
 
-## ✨ Yeni Özellikler
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Prerequisites](#prerequisites)
+- [Installation & Setup](#installation--setup)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Frontend Development](#frontend-development)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
 
-### 1. 🔐 JWT Authentication System
-**Endpoint'ler:**
-- `POST /api/auth/register` - Kullanıcı kaydı
-- `POST /api/auth/login` - Giriş yapma ve token alma
-- `GET /api/auth/me` - Mevcut kullanıcı bilgisi
-- `GET /api/auth/validate` - Token doğrulama
+---
 
-**Özellikler:**
-- BCrypt ile şifrelenmiş parolalar
-- Token tabanlı authentication
-- Role-based access control (USER, ADMIN)
-- 24 saat geçerli JWT token'lar
+## 🎯 Overview
 
-**Varsayılan Kullanıcılar:**
+Perfect Traffic Light System is a full-stack application designed to optimize traffic flow through intelligent intersection management. The system supports emergency vehicle prioritization, dynamic traffic rule applications based on real-time sensor data, and comprehensive statistical analysis.
+
+### Key Capabilities
+- **JWT-based Authentication** with role-based access control
+- **Emergency Vehicle Detection** with automatic green light prioritization
+- **Intelligent Traffic Optimization** using rule engine
+- **Real-time Sensor Integration** for traffic monitoring
+- **Comprehensive Dashboard** with statistics and reporting
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication System
+- Secure JWT token-based authentication
+- BCrypt password encryption
+- Role-based access (USER, ADMIN)
+- 24-hour token validity
+
+**Default Users:**
 ```
 Username: admin    | Password: admin123  | Role: ADMIN
 Username: user     | Password: user123   | Role: USER
 ```
 
----
+### 🚨 Emergency Vehicle Priority
+- Automatic detection and prioritization
+- Supported vehicles: 🚑 Ambulance, 🚒 Fire Truck, 🚓 Police
+- Instant green light activation (60 seconds)
+- Safety protocol for surrounding intersections
+- Complete event logging and history
 
-### 2. 🚨 Emergency Vehicle Priority System
-**Endpoint'ler:**
-- `POST /api/emergency/trigger` - Acil araç tespit et
-- `POST /api/emergency/clear/{id}` - Acil durumu sonlandır
-- `GET /api/emergency/active` - Aktif acil durumlar
-- `GET /api/emergency/history/{id}` - Geçmiş kayıtları
-- `POST /api/emergency/test/ambulance` - Test: Ambulans
-- `POST /api/emergency/test/firetruck` - Test: İtfaiye
-- `POST /api/emergency/test/police` - Test: Polis
+### 🎯 Traffic Optimization
+- Dynamic green light duration adjustment
+- Time-based and density-based rules
+- Real-time sensor data processing
+- Performance metrics calculation
+- Automated rule application history
 
-**Desteklenen Araç Tipleri:**
-- 🚑 Ambulans (Priority: 1)
-- 🚒 İtfaiye (Priority: 2)
-- 🚓 Polis (Priority: 2)
+**Default Rules:**
+1. **PEAK_HOUR_EXTENSION** - Extended duration during rush hours (07:00-09:00)
+2. **HIGH_DENSITY_BOOST** - Extra time for high traffic (40+ vehicles)
+3. **NIGHT_MODE_QUICK** - Faster cycles at night (00:00-06:00)
 
-**Nasıl Çalışır:**
-1. Acil araç tespit edilir
-2. İlgili kavşak anında **YEŞIL** yapılır (60 saniye)
-3. Diğer kavşaklar **KIRMIZI** yapılır (güvenlik protokolü)
-4. Detaylı event log'u kaydedilir
-5. Araç geçtikten sonra normal moda dönülür
+### 📡 Sensor Integration
+- Real-time traffic data collection
+- Vehicle count and speed monitoring
+- Density level classification:
+  - 🟢 LOW: 0-9 vehicles
+  - 🟡 MEDIUM: 10-29 vehicles
+  - 🟠 HIGH: 30-49 vehicles
+  - 🔴 CRITICAL: 50+ vehicles
 
-**Response Örneği:**
-```json
-{
-  "success": true,
-  "message": "🚑 Acil araç tespit edildi ve öncelik verildi",
-  "vehicle": {
-    "vehicleId": "AMB-001",
-    "type": "🚑 Ambulans",
-    "status": "Tespit Edildi",
-    "location": "Kavşak-1 (Atatürk Bulvarı)",
-    "direction": "Kuzey",
-    "priority": 1
-  },
-  "actions": [
-    "✅ Kavşak-1: Anında yeşile çevrildi (60 saniye)",
-    "🔴 Kavşak-2: Güvenlik için kırmızıya alındı",
-    "🔴 Kavşak-3: Güvenlik için kırmızıya alındı"
-  ],
-  "impact": {
-    "affectedIntersections": 3,
-    "totalWaitTime": 120,
-    "estimatedDelay": "Minimal (10-15 saniye)"
-  }
-}
-```
+### 📊 Statistics & Reporting
+- Real-time system status monitoring
+- Daily and weekly performance summaries
+- Interactive dashboard with charts
+- Intersection comparison analytics
+- Emergency vehicle statistics
 
 ---
 
-### 3. 🎯 Traffic Optimization System (Rule Engine)
-**Endpoint'ler:**
-- `POST /api/optimization/apply` - Optimizasyon uygula
-- `GET /api/optimization/rules` - Tüm kuralları listele
-- `GET /api/optimization/rules/active` - Aktif kurallar
-- `POST /api/optimization/rules/create-defaults` - Varsayılan kuralları oluştur
-- `POST /api/optimization/test/high-traffic` - Test: Yoğun trafik
-- `POST /api/optimization/test/night-mode` - Test: Gece modu
+## 🛠 Technology Stack
 
-**Varsayılan Kurallar:**
-1. **PEAK_HOUR_EXTENSION**
-   - Zaman: 07:00-09:00
-   - Koşul: 25+ araç
-   - Ayarlama: +15 saniye
-   - Açıklama: Sabah yoğunluğunda yeşil süreyi artırır
+### Backend
+- **Framework:** Spring Boot 3.2.0
+- **Database:** PostgreSQL 15
+- **Authentication:** JWT (JSON Web Token)
+- **Migration:** Flyway
+- **API Docs:** Swagger/OpenAPI 3.0
+- **Container:** Docker + Docker Compose
 
-2. **HIGH_DENSITY_BOOST**
-   - Koşul: 40+ araç
-   - Ayarlama: +20 saniye
-   - Açıklama: Yüksek yoğunlukta ekstra süre verir
-
-3. **NIGHT_MODE_QUICK**
-   - Zaman: 00:00-06:00
-   - Koşul: 15 veya daha az araç
-   - Ayarlama: -10 saniye
-   - Açıklama: Gece saatlerinde hızlı geçiş
-
-**Nasıl Çalışır:**
-1. Kavşakta araç sayısı ve hız ölçülür
-2. Sistem uygun kuralı bulur (öncelik sırasına göre)
-3. Yeşil ışık süresi dinamik olarak ayarlanır
-4. Performans metrikleri hesaplanır
-5. Uygulama kaydedilir
-
-**Request Örneği:**
-```json
-POST /api/optimization/apply
-{
-  "intersectionId": 1,
-  "vehicleCount": 45,
-  "averageSpeed": 25.5
-}
-```
-
-**Response Örneği:**
-```json
-{
-  "success": true,
-  "message": "🎯 Trafik kuralı başarıyla uygulandı: PEAK_HOUR_EXTENSION",
-  "intersection": {
-    "intersectionId": 1,
-    "name": "Kavşak-1 (Atatürk Bulvarı)",
-    "vehicleCount": 45,
-    "densityLevel": "🟠 Yüksek (30-49 araç)"
-  },
-  "details": {
-    "previousGreenDuration": 30,
-    "newGreenDuration": 45,
-    "adjustment": "+15 saniye",
-    "visual": "⏱️ 30s → 45s (+15s)"
-  },
-  "performance": {
-    "waitTimeReduction": "-30%",
-    "flowImprovement": "+45%",
-    "efficiencyScore": "85/100"
-  }
-}
-```
+### Frontend
+- **Framework:** React 18
+- **Build Tool:** Create React App
+- **HTTP Client:** Axios
+- **Charts:** Chart.js / Recharts
+- **UI Components:** Custom + shadcn/ui (optional)
 
 ---
 
-### 4. 📡 Sensor Integration System
-**Endpoint'ler:**
-- `POST /api/optimization/sensor/data` - Sensör verisi gönder
-- `GET /api/optimization/sensor/intersection/{id}` - Kavşak sensör verileri
-- `GET /api/optimization/sensor/recent/{id}` - Son 1 saatteki veriler
+## 📦 Prerequisites
 
-**Sensör Verisi Gönderme:**
-```json
-POST /api/optimization/sensor/data
-{
-  "sensorId": "SENSOR-001",
-  "intersectionId": 1,
-  "direction": "NORTH",
-  "vehicleCount": 45,
-  "averageSpeed": 35.5
-}
-```
+Before you begin, ensure you have the following installed:
 
-**Yoğunluk Seviyeleri:**
-- 🟢 **LOW:** 0-9 araç
-- 🟡 **MEDIUM:** 10-29 araç
-- 🟠 **HIGH:** 30-49 araç
-- 🔴 **CRITICAL:** 50+ araç
+- **Docker Desktop** (latest version)
+- **Node.js** (v16 or higher)
+- **npm** (v8 or higher)
+- **Git**
+- **Web Browser** (Chrome, Firefox, or Edge)
 
 ---
 
-### 5. 📊 Statistics & Reporting System
-**Endpoint'ler:**
-- `GET /api/statistics/daily-summary` - Günlük özet rapor
-- `GET /api/statistics/weekly-performance` - Haftalık performans
-- `GET /api/statistics/system-status` - Gerçek zamanlı durum
-- `GET /api/statistics/dashboard` - Dashboard (hepsi bir arada)
-- `GET /api/statistics/compare-intersections` - Kavşak karşılaştırması
-- `GET /api/statistics/chart-data` - Grafik verileri
-- `GET /api/statistics/emergency-stats` - Acil durum istatistikleri
+## 🚀 Installation & Setup
 
-**Günlük Özet Response:**
-```json
-{
-  "reportDate": "2025-12-28T01:30:00",
-  "reportType": "📊 Günlük Özet Rapor",
-  "emergencyVehicles": {
-    "total": 8,
-    "description": "🚨 Toplam acil araç geçişi",
-    "breakdown": {
-      "ambulance": 5,
-      "fireTruck": 2,
-      "police": 1,
-      "total": 8
-    }
-  },
-  "ruleApplications": {
-    "total": 127,
-    "description": "🎯 Toplam kural uygulaması"
-  }
-}
-```
-
----
-
-## 🚀 Kurulum ve Çalıştırma
-
-### Gereksinimler
-- Docker Desktop
-- Git
-- Postman veya web browser (Swagger için)
-
-### Adım 1: Projeyi Klonla
+### Step 1: Clone the Repository
 ```bash
-git clone <repo-url>
+git clone <repository-url>
+cd perfect-traffic-light-system
+```
+
+### Step 2: Backend Setup
+
+Navigate to the backend directory:
+```bash
 cd Backend
 ```
 
-### Adım 2: Docker ile Başlat
+#### Clean Installation (First Time)
 ```bash
-# İlk kurulum (database'i temizle)
+# Remove any existing containers and volumes
 docker-compose down -v
 
-# Build ve başlat
+# Build and start the containers
 docker-compose up --build -d
 
-# Logları izle
+# Monitor the logs
 docker-compose logs -f app
 ```
 
-### Adım 3: Migration Kontrolü
-Logları kontrol et, şunu göreceksin:
+#### Verify Backend Installation
+Watch the logs for successful migration messages:
 ```
 Flyway: Migrating schema "public" to version "4 - create emergency system tables"
 Flyway: Migrating schema "public" to version "5 - create optimization system tables"
-Flyway: Successfully applied 2 migrations
+Flyway: Successfully applied migrations
 ```
 
-### Adım 4: İlk Kurulum
+#### Initialize Default Rules
 ```bash
-# Swagger'a git
+# Access Swagger UI
 http://localhost:8080/swagger-ui.html
 
-# Varsayılan kuralları oluştur
+# Execute this endpoint once:
 POST /api/optimization/rules/create-defaults
 ```
 
-### Adım 5: Test Et
-```bash
-# Health check
-curl http://localhost:8080/api/health
+### Step 3: Frontend Setup
 
-# Login test
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
+Open a new terminal and navigate to the frontend directory:
+```bash
+cd Frontend
+```
+
+#### Install Dependencies
+```bash
+npm install
+```
+
+#### Configure API Endpoint
+Ensure your API base URL is set correctly in your frontend configuration:
+```javascript
+// src/config/api.js or similar
+export const API_BASE_URL = 'http://localhost:8080/api';
 ```
 
 ---
 
-## 📚 API Dokümantasyonu
+## 🎬 Running the Application
+
+### Backend
+```bash
+cd Backend
+
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop services
+docker-compose down
+
+# Stop and remove all data
+docker-compose down -v
+```
+
+The backend will be available at:
+- **API:** http://localhost:8080/api
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **Health Check:** http://localhost:8080/api/health
+
+### Frontend
+```bash
+cd Frontend
+
+# Development mode
+npm start
+```
+
+The application will open automatically at http://localhost:3000
+
+#### Other Frontend Commands
+```bash
+# Run tests
+npm test
+
+# Production build
+npm run build
+
+# Analyze bundle size
+npm run build
+# Then check the build folder
+```
+
+---
+
+## 📚 API Documentation
 
 ### Swagger UI
-**URL:** http://localhost:8080/swagger-ui.html
-
-### API Kategorileri
-
-#### 1. Authentication (Public)
-- ✅ `/api/auth/**` - Authentication gerekmiyor
-- ✅ `/api/health/**` - Health check
-
-#### 2. Emergency System (Protected)
-- 🔒 `/api/emergency/**` - Token gerekli
-- 👑 `/api/emergency/clear/**` - Admin gerekli (opsiyonel)
-
-#### 3. Traffic Optimization (Protected)
-- 🔒 `/api/optimization/**` - Token gerekli
-
-#### 4. Statistics (Protected)
-- 🔒 `/api/statistics/**` - Token gerekli
+Access the interactive API documentation at:
+**http://localhost:8080/swagger-ui.html**
 
 ### Authentication Flow
-```
-1. POST /api/auth/login
-   → Response: { "token": "eyJhbGc..." }
 
-2. Diğer endpoint'lere istek at:
-   Headers: { "Authorization": "Bearer eyJhbGc..." }
+#### 1. Login
+```bash
+POST /api/auth/login
+Content-Type: application/json
 
-3. Token 24 saat geçerli
-   → Süre dolarsa tekrar login ol
-```
+{
+  "username": "admin",
+  "password": "admin123"
+}
 
----
-
-## 🎨 Frontend Entegrasyon Rehberi
-
-### 1. Authentication Entegrasyonu
-
-#### Login Sayfası
-```javascript
-// Login API call
-const login = async (username, password) => {
-  const response = await fetch('http://localhost:8080/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  
-  const data = await response.json();
-  
-  if (data.token) {
-    // Token'ı sakla
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify({
-      id: data.userId,
-      username: data.username,
-      isAdmin: data.isAdmin
-    }));
-    
-    return { success: true, user: data };
-  }
-  
-  return { success: false, error: 'Login failed' };
-};
-
-// Kullanım
-const result = await login('admin', 'admin123');
-if (result.success) {
-  // Dashboard'a yönlendir
-  navigate('/dashboard');
+# Response
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": 1,
+  "username": "admin",
+  "isAdmin": true
 }
 ```
 
-#### Protected API Calls
+#### 2. Use Token in Requests
+```bash
+GET /api/statistics/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Main Endpoints
+
+#### Authentication (Public)
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login and get token
+- `GET /api/auth/me` - Get current user info
+- `GET /api/auth/validate` - Validate token
+
+#### Emergency System (Protected)
+- `POST /api/emergency/trigger` - Detect emergency vehicle
+- `POST /api/emergency/clear/{id}` - Clear emergency
+- `GET /api/emergency/active` - List active emergencies
+- `GET /api/emergency/history/{id}` - Get vehicle history
+- `POST /api/emergency/test/ambulance` - Test ambulance scenario
+- `POST /api/emergency/test/firetruck` - Test fire truck scenario
+- `POST /api/emergency/test/police` - Test police scenario
+
+#### Traffic Optimization (Protected)
+- `POST /api/optimization/apply` - Apply optimization
+- `GET /api/optimization/rules` - List all rules
+- `GET /api/optimization/rules/active` - Get active rules
+- `POST /api/optimization/rules/create-defaults` - Create default rules
+- `POST /api/optimization/sensor/data` - Send sensor data
+- `GET /api/optimization/sensor/intersection/{id}` - Get sensor data
+
+#### Statistics (Protected)
+- `GET /api/statistics/daily-summary` - Daily report
+- `GET /api/statistics/weekly-performance` - Weekly stats
+- `GET /api/statistics/system-status` - Real-time status
+- `GET /api/statistics/dashboard` - Complete dashboard
+- `GET /api/statistics/chart-data` - Chart data
+- `GET /api/statistics/emergency-stats` - Emergency statistics
+
+---
+
+## 🎨 Frontend Development
+
+### Project Structure
+```
+Frontend/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── emergency/
+│   │   └── optimization/
+│   ├── services/
+│   │   └── api.js
+│   ├── utils/
+│   ├── App.js
+│   └── index.js
+└── package.json
+```
+
+### API Service Configuration
 ```javascript
-// Axios interceptor ile token ekle
+// src/services/api.js
 import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:8080/api'
 });
 
+// Add token to all requests
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -375,56 +341,42 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// Kullanım
-const fetchDashboard = async () => {
-  const response = await api.get('/statistics/dashboard');
-  return response.data;
-};
+// Handle token expiration
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
 ```
 
-#### Logout
+### Example Component
 ```javascript
-const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  navigate('/login');
-};
-```
-
----
-
-### 2. Emergency System UI
-
-#### Acil Araç Tespit Butonu
-```jsx
+// src/components/emergency/EmergencyTrigger.jsx
 import React, { useState } from 'react';
+import api from '../../services/api';
 
 const EmergencyTrigger = () => {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
 
   const triggerEmergency = async (vehicleType) => {
     setLoading(true);
-    
     try {
       const response = await api.post('/emergency/trigger', {
         vehicleId: `${vehicleType}-${Date.now()}`,
-        type: vehicleType, // "AMBULANCE", "FIRE_TRUCK", "POLICE"
+        type: vehicleType,
         intersectionId: 1,
-        direction: "NORTH",
-        notes: "Emergency detected from UI"
+        direction: 'NORTH'
       });
-      
-      setResult(response.data);
-      
-      // Başarı bildirimi göster
-      toast.success(response.data.message);
-      
-      // 5 saniye sonra temizle
-      setTimeout(() => setResult(null), 5000);
-      
+      alert(response.data.message);
     } catch (error) {
-      toast.error('Acil durum tetiklenemedi');
+      alert('Error triggering emergency');
     } finally {
       setLoading(false);
     }
@@ -432,722 +384,199 @@ const EmergencyTrigger = () => {
 
   return (
     <div className="emergency-panel">
-      <h3>🚨 Acil Araç Tespiti</h3>
-      
-      <div className="button-group">
-        <button 
-          onClick={() => triggerEmergency('AMBULANCE')}
-          disabled={loading}
-          className="btn-emergency ambulance"
-        >
-          🚑 Ambulans
-        </button>
-        
-        <button 
-          onClick={() => triggerEmergency('FIRE_TRUCK')}
-          disabled={loading}
-          className="btn-emergency firetruck"
-        >
-          🚒 İtfaiye
-        </button>
-        
-        <button 
-          onClick={() => triggerEmergency('POLICE')}
-          disabled={loading}
-          className="btn-emergency police"
-        >
-          🚓 Polis
-        </button>
-      </div>
-
-      {result && (
-        <div className="emergency-result">
-          <h4>{result.message}</h4>
-          
-          <div className="affected-intersections">
-            {result.affectedIntersections.map(intersection => (
-              <div key={intersection.intersectionId} className="intersection-status">
-                <span className="visual">{intersection.visual}</span>
-                <span className="name">{intersection.name}</span>
-                <span className="duration">{intersection.duration}s</span>
-              </div>
-            ))}
-          </div>
-          
-          <div className="impact-info">
-            <p>Etkilenen kavşak: {result.impact.affectedIntersections}</p>
-            <p>Gecikme: {result.impact.estimatedDelay}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-```
-
-#### Aktif Acil Durumlar Listesi
-```jsx
-const ActiveEmergencies = () => {
-  const [emergencies, setEmergencies] = useState([]);
-
-  useEffect(() => {
-    const fetchActive = async () => {
-      const response = await api.get('/emergency/active');
-      setEmergencies(response.data);
-    };
-
-    // Her 5 saniyede bir güncelle
-    const interval = setInterval(fetchActive, 5000);
-    fetchActive();
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="active-emergencies">
-      <h3>🚨 Aktif Acil Durumlar ({emergencies.length})</h3>
-      
-      {emergencies.length === 0 ? (
-        <p>✅ Aktif acil durum yok</p>
-      ) : (
-        <ul>
-          {emergencies.map(emergency => (
-            <li key={emergency.id} className="emergency-item">
-              <span className="icon">{emergency.type.displayName}</span>
-              <span className="vehicle-id">{emergency.vehicleId}</span>
-              <span className="location">Kavşak-{emergency.currentIntersectionId}</span>
-              <span className="status">{emergency.status.displayName}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
-```
-
----
-
-### 3. Traffic Optimization UI
-
-#### Sensör Veri Gönderimi
-```jsx
-const SensorSimulator = ({ intersectionId }) => {
-  const [vehicleCount, setVehicleCount] = useState(0);
-  const [speed, setSpeed] = useState(30);
-
-  const sendSensorData = async () => {
-    try {
-      const response = await api.post('/optimization/sensor/data', {
-        sensorId: `SENSOR-UI-${intersectionId}`,
-        intersectionId,
-        direction: "NORTH",
-        vehicleCount,
-        averageSpeed: speed
-      });
-      
-      toast.success(`📡 Sensör verisi gönderildi - ${response.data.densityLevel}`);
-      
-    } catch (error) {
-      toast.error('Sensör verisi gönderilemedi');
-    }
-  };
-
-  return (
-    <div className="sensor-simulator">
-      <h4>📡 Sensör Simülatörü - Kavşak {intersectionId}</h4>
-      
-      <div className="input-group">
-        <label>Araç Sayısı:</label>
-        <input 
-          type="range" 
-          min="0" 
-          max="80" 
-          value={vehicleCount}
-          onChange={(e) => setVehicleCount(e.target.value)}
-        />
-        <span>{vehicleCount} araç</span>
-      </div>
-
-      <div className="input-group">
-        <label>Ortalama Hız:</label>
-        <input 
-          type="range" 
-          min="0" 
-          max="60" 
-          value={speed}
-          onChange={(e) => setSpeed(e.target.value)}
-        />
-        <span>{speed} km/h</span>
-      </div>
-
-      <button onClick={sendSensorData} className="btn-primary">
-        📡 Veri Gönder
+      <h3>🚨 Emergency Vehicle Detection</h3>
+      <button onClick={() => triggerEmergency('AMBULANCE')} disabled={loading}>
+        🚑 Ambulance
+      </button>
+      <button onClick={() => triggerEmergency('FIRE_TRUCK')} disabled={loading}>
+        🚒 Fire Truck
+      </button>
+      <button onClick={() => triggerEmergency('POLICE')} disabled={loading}>
+        🚓 Police
       </button>
     </div>
   );
 };
-```
 
-#### Optimizasyon Uygula
-```jsx
-const OptimizationPanel = ({ intersectionId }) => {
-  const [result, setResult] = useState(null);
-
-  const applyOptimization = async () => {
-    try {
-      const response = await api.post('/optimization/apply', {
-        intersectionId,
-        vehicleCount: 45,
-        averageSpeed: 25.5
-      });
-      
-      setResult(response.data);
-      
-    } catch (error) {
-      toast.error('Optimizasyon uygulanamadı');
-    }
-  };
-
-  return (
-    <div className="optimization-panel">
-      <button onClick={applyOptimization} className="btn-optimize">
-        🎯 Optimizasyon Uygula
-      </button>
-
-      {result && result.success && (
-        <div className="optimization-result">
-          <h4>{result.message}</h4>
-          
-          <div className="details">
-            <div className="metric">
-              <label>Önceki Süre:</label>
-              <span>{result.details.previousGreenDuration}s</span>
-            </div>
-            <div className="metric">
-              <label>Yeni Süre:</label>
-              <span className="highlight">{result.details.newGreenDuration}s</span>
-            </div>
-            <div className="metric">
-              <label>Ayarlama:</label>
-              <span className="adjustment">{result.details.adjustment}</span>
-            </div>
-          </div>
-
-          <div className="performance">
-            <p>⏱️ {result.details.visual}</p>
-            <p>📉 Bekleme azalması: {result.performance.waitTimeReduction}</p>
-            <p>📈 Akış iyileşmesi: {result.performance.flowImprovement}</p>
-            <p>🎯 Verimlilik: {result.performance.efficiencyScore}</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+export default EmergencyTrigger;
 ```
 
 ---
 
-### 4. Statistics Dashboard
+## 🧪 Testing
 
-#### Ana Dashboard
-```jsx
-import { useState, useEffect } from 'react';
-import { Line, Bar, Pie } from 'react-chartjs-2';
+### Backend Testing
 
-const MainDashboard = () => {
-  const [dashboard, setDashboard] = useState(null);
-  const [chartData, setChartData] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      // Dashboard verilerini al
-      const dashResponse = await api.get('/statistics/dashboard');
-      setDashboard(dashResponse.data);
-
-      // Grafik verilerini al
-      const chartResponse = await api.get('/statistics/chart-data');
-      setChartData(chartResponse.data);
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // 30 saniyede bir güncelle
-
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!dashboard) return <div>Yükleniyor...</div>;
-
-  const { systemStatus, dailySummary, topIntersections } = dashboard;
-
-  return (
-    <div className="dashboard">
-      {/* System Status */}
-      <div className="status-card">
-        <h2>{systemStatus.systemStatus}</h2>
-        <div className="active-emergencies">
-          <h3>Aktif Acil Durumlar: {systemStatus.activeEmergencies.count}</h3>
-          <span className={`badge ${systemStatus.activeEmergencies.status}`}>
-            {systemStatus.activeEmergencies.status}
-          </span>
-        </div>
-      </div>
-
-      {/* Daily Summary */}
-      <div className="summary-grid">
-        <div className="summary-card">
-          <h3>🚨 Acil Araç Geçişleri</h3>
-          <div className="number">{dailySummary.emergencyVehicles.total}</div>
-          <div className="breakdown">
-            <span>🚑 {dailySummary.emergencyVehicles.breakdown.ambulance}</span>
-            <span>🚒 {dailySummary.emergencyVehicles.breakdown.fireTruck}</span>
-            <span>🚓 {dailySummary.emergencyVehicles.breakdown.police}</span>
-          </div>
-        </div>
-
-        <div className="summary-card">
-          <h3>🎯 Kural Uygulamaları</h3>
-          <div className="number">{dailySummary.ruleApplications.total}</div>
-        </div>
-      </div>
-
-      {/* Charts */}
-      {chartData && (
-        <div className="charts-grid">
-          <div className="chart-card">
-            <h3>📈 Saatlik Trafik</h3>
-            <Line
-              data={{
-                labels: chartData.hourlyTraffic.labels,
-                datasets: [{
-                  label: 'Araç Sayısı',
-                  data: chartData.hourlyTraffic.data,
-                  borderColor: 'rgb(75, 192, 192)',
-                  tension: 0.1
-                }]
-              }}
-            />
-          </div>
-
-          <div className="chart-card">
-            <h3>📊 Kural Dağılımı</h3>
-            <Pie
-              data={{
-                labels: chartData.ruleDistribution.labels,
-                datasets: [{
-                  data: chartData.ruleDistribution.data,
-                  backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)'
-                  ]
-                }]
-              }}
-            />
-          </div>
-
-          <div className="chart-card">
-            <h3>🏆 Kavşak Karşılaştırması</h3>
-            <Bar
-              data={{
-                labels: chartData.intersectionComparison.labels,
-                datasets: [
-                  {
-                    label: 'Acil Durumlar',
-                    data: chartData.intersectionComparison.emergencies,
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                  },
-                  {
-                    label: 'Verimlilik',
-                    data: chartData.intersectionComparison.efficiency,
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
-                  }
-                ]
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Top Intersections */}
-      <div className="intersections-table">
-        <h3>🚦 Kavşak Performansı</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Kavşak</th>
-              <th>Acil Durumlar</th>
-              <th>Kural Uygulamaları</th>
-              <th>Verimlilik</th>
-              <th>Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topIntersections.intersections.map(intersection => (
-              <tr key={intersection.id}>
-                <td>{intersection.name}</td>
-                <td>{intersection.emergencyCount}</td>
-                <td>{intersection.ruleApplications}</td>
-                <td>{intersection.efficiency}</td>
-                <td>{intersection.rating}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-export default MainDashboard;
+#### Health Check
+```bash
+curl http://localhost:8080/api/health
 ```
 
-#### Gerçek Zamanlı Sistem Durumu
-```jsx
-const SystemStatus = () => {
-  const [status, setStatus] = useState(null);
-
-  useEffect(() => {
-    const fetchStatus = async () => {
-      const response = await api.get('/statistics/system-status');
-      setStatus(response.data);
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 5000); // 5 saniyede bir
-
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!status) return null;
-
-  const getStatusColor = (statusText) => {
-    if (statusText.includes('🟢')) return 'green';
-    if (statusText.includes('🟡')) return 'yellow';
-    if (statusText.includes('🔴')) return 'red';
-    return 'gray';
-  };
-
-  return (
-    <div className={`system-status ${getStatusColor(status.systemStatus)}`}>
-      <div className="status-indicator">
-        <h2>{status.systemStatus}</h2>
-        <span className="timestamp">
-          {new Date(status.timestamp).toLocaleTimeString()}
-        </span>
-      </div>
-
-      <div className="active-emergencies">
-        <span className="label">Aktif Acil Durumlar:</span>
-        <span className="count">{status.activeEmergencies.count}</span>
-        <span className={`priority ${status.activeEmergencies.priority}`}>
-          {status.activeEmergencies.priority}
-        </span>
-      </div>
-
-      <div className="recent-activity">
-        <h4>Son 5 Dakika</h4>
-        <p>Kural Uygulamaları: {status.recentActivity.ruleApplications}</p>
-        <p>Durum: {status.recentActivity.status}</p>
-      </div>
-    </div>
-  );
-};
-```
-
----
-
-### 5. Real-time Updates with Polling
-
-```jsx
-// Custom hook for polling
-const usePolling = (fetchFunction, interval = 5000) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await fetchFunction();
-        setData(result);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    const intervalId = setInterval(fetchData, interval);
-
-    return () => clearInterval(intervalId);
-  }, [fetchFunction, interval]);
-
-  return { data, loading, error };
-};
-
-// Kullanım
-const Dashboard = () => {
-  const { data: emergencies } = usePolling(
-    () => api.get('/emergency/active').then(res => res.data),
-    5000 // 5 saniyede bir
-  );
-
-  const { data: systemStatus } = usePolling(
-    () => api.get('/statistics/system-status').then(res => res.data),
-    3000 // 3 saniyede bir
-  );
-
-  return (
-    <div>
-      <SystemStatus status={systemStatus} />
-      <EmergencyList emergencies={emergencies} />
-    </div>
-  );
-};
-```
-
----
-
-## 🧪 Test Senaryoları
-
-### Senaryo 1: Complete Emergency Flow
+#### Complete Test Flow
 ```bash
 # 1. Login
-POST /api/auth/login
-Body: { "username": "admin", "password": "admin123" }
-→ Copy token
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
 
-# 2. Ambulans tespit et
-POST /api/emergency/test/ambulance
-Header: Authorization: Bearer <token>
-→ Ambulans ID'sini not al (response'dan)
+# 2. Trigger Emergency (use token from step 1)
+curl -X POST http://localhost:8080/api/emergency/test/ambulance \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
 
-# 3. Aktif acil durumları kontrol et
-GET /api/emergency/active
-Header: Authorization: Bearer <token>
-→ Ambulans listede görünmeli
+# 3. Check Active Emergencies
+curl -X GET http://localhost:8080/api/emergency/active \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
 
-# 4. Geçmişi kontrol et
-GET /api/emergency/history/{vehicleId}
-Header: Authorization: Bearer <token>
-→ Event timeline'ı göreceksin
-
-# 5. Acil durumu sonlandır
-POST /api/emergency/clear/{vehicleId}
-Header: Authorization: Bearer <token>
-→ Durum "CLEARED" olmalı
-
-# 6. İstatistikleri kontrol et
-GET /api/statistics/daily-summary
-Header: Authorization: Bearer <token>
-→ Emergency count artmış olmalı
+# 4. Get Dashboard Stats
+curl -X GET http://localhost:8080/api/statistics/dashboard \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
-### Senaryo 2: Traffic Optimization Flow
+### Frontend Testing
 ```bash
-# 1. Varsayılan kuralları oluştur (ilk seferlik)
-POST /api/optimization/rules/create-defaults
-→ 3 kural oluşturulmalı
+cd Frontend
 
-# 2. Kuralları listele
-GET /api/optimization/rules/active
-→ PEAK_HOUR, HIGH_DENSITY, NIGHT_MODE
+# Run test suite
+npm test
 
-# 3. Sensör verisi gönder
-POST /api/optimization/sensor/data
-Body: {
-  "sensorId": "SENSOR-001",
-  "intersectionId": 1,
-  "direction": "NORTH",
-  "vehicleCount": 45,
-  "averageSpeed": 35.5
-}
-→ Density level hesaplanmalı
+# Run tests in watch mode
+npm test -- --watch
 
-# 4. Optimizasyon uygula
-POST /api/optimization/apply
-Body: {
-  "intersectionId": 1,
-  "vehicleCount": 45,
-  "averageSpeed": 25.5
-}
-→ Kural uygulanmalı, süre artırılmalı
-
-# 5. Kural geçmişini kontrol et
-GET /api/optimization/rules/{ruleId}/history
-→ Uygulama kayıtlarını göreceksin
-```
-
-### Senaryo 3: Dashboard Data Flow
-```bash
-# 1. Birkaç test verisi oluştur
-POST /api/emergency/test/ambulance (2 kez)
-POST /api/emergency/test/firetruck (1 kez)
-POST /api/emergency/test/police (1 kez)
-POST /api/optimization/test/high-traffic (3 kez)
-
-# 2. Dashboard'u çek
-GET /api/statistics/dashboard
-→ Tüm veriler bir arada
-
-# 3. Günlük özeti kontrol et
-GET /api/statistics/daily-summary
-→ Emergency breakdown: ambulance=2, firetruck=1, police=1
-
-# 4. Grafik verilerini al
-GET /api/statistics/chart-data
-→ Frontend grafikleri için hazır data
-
-# 5. Kavşak karşılaştırması
-GET /api/statistics/compare-intersections
-→ Hangi kavşak daha iyi performans gösteriyor
-```
-
----
-
-## 💾 Veritabanı Şeması
-
-### Users Table
-```sql
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    is_admin BOOLEAN DEFAULT FALSE,
-    enabled BOOLEAN DEFAULT TRUE
-);
-```
-
-### Emergency Vehicles Table
-```sql
-CREATE TABLE emergency_vehicles (
-    id BIGSERIAL PRIMARY KEY,
-    vehicle_id VARCHAR(50) UNIQUE NOT NULL,
-    type VARCHAR(20) NOT NULL, -- AMBULANCE, FIRE_TRUCK, POLICE
-    status VARCHAR(20) NOT NULL, -- DETECTED, IN_PROGRESS, CLEARED
-    current_intersection_id BIGINT NOT NULL,
-    direction VARCHAR(20) NOT NULL, -- NORTH, SOUTH, EAST, WEST
-    detected_at TIMESTAMP NOT NULL,
-    cleared_at TIMESTAMP,
-    priority_level INTEGER,
-    notes VARCHAR(500)
-);
-```
-
-### Emergency Events Table
-```sql
-CREATE TABLE emergency_events (
-    id BIGSERIAL PRIMARY KEY,
-    emergency_vehicle_id BIGINT NOT NULL,
-    intersection_id BIGINT NOT NULL,
-    event_type VARCHAR(50) NOT NULL,
-    description VARCHAR(1000),
-    previous_phase VARCHAR(20),
-    new_phase VARCHAR(20),
-    duration_seconds INTEGER,
-    created_at TIMESTAMP NOT NULL
-);
-```
-
-### Traffic Rules Table
-```sql
-CREATE TABLE traffic_rules (
-    id BIGSERIAL PRIMARY KEY,
-    rule_name VARCHAR(100) UNIQUE NOT NULL,
-    rule_type VARCHAR(30) NOT NULL,
-    priority INTEGER NOT NULL,
-    min_vehicle_count INTEGER,
-    max_vehicle_count INTEGER,
-    time_start TIME,
-    time_end TIME,
-    green_duration_adjustment INTEGER,
-    base_green_duration INTEGER DEFAULT 30,
-    times_applied BIGINT DEFAULT 0
-);
-```
-
-### Traffic Sensors Table
-```sql
-CREATE TABLE traffic_sensors (
-    id BIGSERIAL PRIMARY KEY,
-    sensor_id VARCHAR(50) UNIQUE NOT NULL,
-    intersection_id BIGINT NOT NULL,
-    direction VARCHAR(20) NOT NULL,
-    vehicle_count INTEGER NOT NULL,
-    average_speed DOUBLE PRECISION,
-    density_level VARCHAR(20) NOT NULL,
-    recorded_at TIMESTAMP NOT NULL
-);
+# Generate coverage report
+npm test -- --coverage
 ```
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Docker Container Başlamıyor
-```bash
-# Container loglarını kontrol et
-docker-compose logs app
+### Backend Issues
 
-# Database bağlantısı kontrolü
+#### Docker Container Won't Start
+```bash
+# Check logs
+docker-compose logs app
 docker-compose logs postgres
 
-# Tüm container'ları sil ve yeniden başlat
+# Restart everything
 docker-compose down -v
 docker-compose up --build -d
 ```
 
-### Migration Hataları
+#### Database Connection Error
 ```bash
-# Migration sırasını kontrol et
-ls -la src/main/resources/db/migration/
+# Verify PostgreSQL is running
+docker-compose ps
 
-# Flyway'i temizle (dikkatli kullan!)
+# Check database logs
+docker-compose logs postgres
+
+# Recreate database
+docker-compose down -v
+docker-compose up -d postgres
+docker-compose up -d app
+```
+
+#### Migration Errors
+```bash
+# View migration status
+docker-compose exec postgres psql -U trafficlight -d trafficlight_db
+
+# In psql:
+SELECT * FROM flyway_schema_history;
+\q
+
+# Reset database (WARNING: deletes all data)
 docker-compose exec postgres psql -U trafficlight -d trafficlight_db
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 \q
 
-# Yeniden başlat
+# Restart application
 docker-compose restart app
 ```
 
-### JWT Token Geçersiz
-```bash
-# Token süresi dolmuş olabilir (24 saat)
-# Yeniden login ol:
-POST /api/auth/login
+### Frontend Issues
 
-# Token formatını kontrol et:
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-# "Bearer " öneki önemli!
+#### Port 3000 Already in Use
+```bash
+# Kill process on port 3000 (macOS/Linux)
+lsof -ti:3000 | xargs kill -9
+
+# Or use different port
+PORT=3001 npm start
 ```
 
-## 📝 Notlar
+#### API Connection Issues
+- Verify backend is running: http://localhost:8080/api/health
+- Check CORS configuration in backend
+- Verify API_BASE_URL in frontend configuration
+- Check browser console for errors
 
-### Önemli Hatırlatmalar
-1. **İlk kurulumda** varsayılan kuralları oluşturmayı unutma: `POST /api/optimization/rules/create-defaults`
-2. **JWT token** 24 saat geçerli, sonrasında yeniden login gerekli
-3. **Database** docker-compose down -v ile silinir, önemli verileri yedekle
-4. **Swagger** her zaman güncel API dokümantasyonu için kaynak
+#### Build Fails
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
 
-### Performans İpuçları
-- Frontend'de polling interval'ı ihtiyaca göre ayarla (önerilen: 5-10 saniye)
-- Chart verilerini cache'le, her render'da API çağırma
-- Büyük listelerde pagination kullan (backend'de destekleniyor)
-- WebSocket yerine HTTP polling kullanıyoruz (basitlik için)
+# Clear npm cache
+npm cache clean --force
+npm install
+```
 
-### Güvenlik
-- Production'da JWT secret'ı değiştir (environment variable)
-- HTTPS kullan
-- Rate limiting ekle (isteğe bağlı)
-- Admin endpoint'lerine özellikle dikkat et
+### JWT Token Issues
+
+#### Token Expired
+- Tokens are valid for 24 hours
+- Login again to get a new token
+- Implement automatic token refresh in frontend
+
+#### Invalid Token Format
+- Ensure "Bearer " prefix is included
+- Check token is not truncated
+- Verify token is stored correctly in localStorage
 
 ---
 
-**Son Güncelleme:** 28 Aralık 2025
-**Versiyon:** Sprint 4 - Complete System
-**Durum:** ✅ Production Ready
+## 📝 Additional Notes
+
+### Important Reminders
+1. **First Setup:** Run `POST /api/optimization/rules/create-defaults` to create default traffic rules
+2. **JWT Token:** Valid for 24 hours, requires re-login after expiration
+3. **Database:** Using `docker-compose down -v` will delete all data
+4. **Swagger:** Always available at http://localhost:8080/swagger-ui.html for API reference
+
+### Performance Tips
+- Adjust frontend polling intervals based on needs (recommended: 5-10 seconds)
+- Cache chart data to avoid unnecessary API calls
+- Use pagination for large lists
+- Monitor Docker resource usage
+
+### Security Considerations
+- Change JWT secret in production (use environment variables)
+- Always use HTTPS in production
+- Consider implementing rate limiting
+- Secure admin endpoints appropriately
+- Never commit credentials to version control
+
+### Production Deployment
+- Set `NODE_ENV=production` for React build
+- Configure proper CORS origins
+- Use environment-specific configuration files
+- Set up proper logging and monitoring
+- Configure automated backups for PostgreSQL
+
+---
+
+## 📄 License
+
+This project is part of an academic assignment.
+
+## 🤝 Contributing
+
+This is an academic project. For any questions or suggestions, please contact the team members.
+
+---
+
+**Last Updated:** January 2026  
+**Status:** ✅ Production Ready
