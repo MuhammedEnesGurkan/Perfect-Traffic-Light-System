@@ -1125,29 +1125,3 @@ POST /api/auth/login
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 # "Bearer " öneki önemli!
 ```
-
-## 📝 Notlar
-
-### Önemli Hatırlatmalar
-1. **İlk kurulumda** varsayılan kuralları oluşturmayı unutma: `POST /api/optimization/rules/create-defaults`
-2. **JWT token** 24 saat geçerli, sonrasında yeniden login gerekli
-3. **Database** docker-compose down -v ile silinir, önemli verileri yedekle
-4. **Swagger** her zaman güncel API dokümantasyonu için kaynak
-
-### Performans İpuçları
-- Frontend'de polling interval'ı ihtiyaca göre ayarla (önerilen: 5-10 saniye)
-- Chart verilerini cache'le, her render'da API çağırma
-- Büyük listelerde pagination kullan (backend'de destekleniyor)
-- WebSocket yerine HTTP polling kullanıyoruz (basitlik için)
-
-### Güvenlik
-- Production'da JWT secret'ı değiştir (environment variable)
-- HTTPS kullan
-- Rate limiting ekle (isteğe bağlı)
-- Admin endpoint'lerine özellikle dikkat et
-
----
-
-**Son Güncelleme:** 28 Aralık 2025
-**Versiyon:** Sprint 4 - Complete System
-**Durum:** ✅ Production Ready
